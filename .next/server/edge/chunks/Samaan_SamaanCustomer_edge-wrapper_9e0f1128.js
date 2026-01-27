@@ -1,0 +1,3 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["chunks/Samaan_SamaanCustomer_edge-wrapper_9e0f1128.js",69470,(e,t,n)=>{self._ENTRIES||={};let a=Promise.resolve().then(()=>e.i(96589));a.catch(()=>{}),self._ENTRIES.middleware_middleware=new Proxy(a,{get(e,t){if("then"===t)return(t,n)=>e.then(t,n);let n=(...n)=>e.then(e=>(0,e[t])(...n));return n.then=(n,a)=>e.then(e=>e[t]).then(n,a),n}})}]);
+
+//# sourceMappingURL=Samaan_SamaanCustomer_edge-wrapper_9e0f1128.js.map

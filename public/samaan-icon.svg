@@ -1,0 +1,9 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="180" rx="40" fill="#F97316"/>
+  <!-- Shopping bag -->
+  <path d="M55 65C55 59.4772 59.4772 55 65 55H115C120.523 55 125 59.4772 125 65V130C125 135.523 120.523 140 115 140H65C59.4772 140 55 135.523 55 130V65Z" fill="white"/>
+  <!-- Bag handle -->
+  <path d="M72 55V50C72 38.954 80.954 30 92 30V30C103.046 30 112 38.954 112 50V55" stroke="white" stroke-width="8" stroke-linecap="round"/>
+  <!-- S letter for Samaan -->
+  <path d="M90 75C79 75 70 80 70 90C70 100 79 102 90 105C101 108 110 110 110 120C110 130 101 135 90 135C79 135 70 130 70 120" stroke="#F97316" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
