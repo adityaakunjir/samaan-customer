@@ -1,9 +1,8 @@
 "use client"
 
-"use client"
-
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 
 // Extend Window interface for Google Sign-In
 declare global {
@@ -28,12 +27,12 @@ import {
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/lib/language-context"
 import { getTranslation } from "@/lib/translations"
 
-export default function LoginPage() {
+function LoginContent() {
   const { language } = useLanguage()
   const t = (key: string) => getTranslation(language, key)
   const router = useRouter()
@@ -387,11 +386,10 @@ export default function LoginPage() {
                         setShowOtpInput(false)
                         setError(null)
                       }}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                        loginMethod === "phone"
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 ${loginMethod === "phone"
                           ? "bg-card text-foreground shadow-md"
                           : "text-muted-foreground hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       <Phone className="w-4 h-4" />
                       {t("auth.phone")}
@@ -402,11 +400,10 @@ export default function LoginPage() {
                         setShowOtpInput(false)
                         setError(null)
                       }}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 ${
-                        loginMethod === "email"
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 ${loginMethod === "email"
                           ? "bg-card text-foreground shadow-md"
                           : "text-muted-foreground hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       <Mail className="w-4 h-4" />
                       {t("auth.email")}
@@ -653,5 +650,21 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <LoginContent />
+    </Suspense>
   )
 }

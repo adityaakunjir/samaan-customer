@@ -1,0 +1,25 @@
+{
+    "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": [
+            "*.{css,scss,js,png,gif,ico,jpg,jpeg,svg,webp,woff,woff2,ttf,eot,json,txt,xml}"
+        ]
+    },
+    "routes": [
+        {
+            "route": "/shops/*",
+            "rewrite": "/shops/_fallback/index.html"
+        },
+        {
+            "route": "/orders/*",
+            "rewrite": "/orders/_fallback/index.html"
+        },
+        {
+            "route": "/category/*",
+            "rewrite": "/category/_fallback/index.html"
+        }
+    ],
+    "platform": {
+        "apiRuntime": "node:18"
+    }
+}
