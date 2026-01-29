@@ -71,7 +71,7 @@ export default function OrdersPage() {
     try {
       const data = await api.orders.getMyOrders()
       const mappedOrders: Order[] = (Array.isArray(data) ? data : []).map((o: any) => ({
-        id: o.id,
+        id: (o.id || o.Id) as string,
         orderNumber: o.orderNumber,
         date: new Date(o.createdAt).toLocaleString(),
         status: (o.status || "new").toLowerCase(),
@@ -190,7 +190,7 @@ export default function OrdersPage() {
   }
 
   const handleViewDetails = (orderId: string) => {
-    router.push(`/orders/${orderId}`)
+    router.push(`/orders/_fallback/?id=${encodeURIComponent(orderId)}`)
   }
 
   const activeCount = orders.filter((o) => o.status === "in-transit" || o.status === "preparing").length

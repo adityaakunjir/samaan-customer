@@ -66,6 +66,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "cod">("cod")
   const [isProcessing, setIsProcessing] = useState(false)
   const [orderPlaced, setOrderPlaced] = useState(false)
+  const [createdOrderIds, setCreatedOrderIds] = useState<string[]>([])
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<Address>(savedAddresses[0])
   const [isLocating, setIsLocating] = useState(false)
@@ -128,7 +129,11 @@ export default function CheckoutPage() {
         })
       })
 
-      await Promise.all(orderPromises)
+      const createdOrders = await Promise.all(orderPromises)
+      const ids = (Array.isArray(createdOrders) ? createdOrders : [])
+        .map((o: any) => (o?.id || o?.Id || "") as string)
+        .filter((v: string) => !!v)
+      setCreatedOrderIds(ids)
       clearCart()
       setOrderPlaced(true)
     } catch (err: any) {
@@ -166,6 +171,9 @@ export default function CheckoutPage() {
   }
 
   if (orderPlaced) {
+    const trackHref =
+      createdOrderIds.length === 1 ? `/orders/_fallback/?id=${encodeURIComponent(createdOrderIds[0])}` : "/orders"
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background flex items-center justify-center p-4">
         <div className="w-full max-w-md text-center">
@@ -181,7 +189,7 @@ export default function CheckoutPage() {
             </span>
           </div>
           <div className="space-y-3">
-            <Link href="/orders">
+            <Link href={trackHref}>
               <Button className="w-full h-12 bg-primary hover:bg-primary/90 rounded-xl font-semibold">
                 {t("orders.trackOrder")}
               </Button>
