@@ -1,81 +1,176 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { ArrowLeft, Bell, Tag, Truck, Clock, CheckCircle2, Sparkles, X } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
 import { getTranslation } from "@/lib/translations"
+import { api, authAPI, getUser } from "@/lib/api/client"
 
-const notifications = [
-  {
-    id: 1,
-    type: "delivery",
-    title: "Order Delivered!",
-    message: "Your order #ORD-12345 has been delivered successfully.",
-    time: "2 mins ago",
-    read: false,
-    icon: CheckCircle2,
-    color: "text-green-600",
-    bgColor: "bg-green-50",
-  },
-  {
-    id: 2,
-    type: "offer",
-    title: "Flash Sale Live!",
-    message: "Get 30% off on fresh vegetables. Limited time offer!",
-    time: "1 hour ago",
-    read: false,
+type NotificationItem = {
+  id: string
+  type: "order" | "offer" | "delivery" | "restock" | "reminder"
+  title: string
+  message: string
+  time: string
+  read: boolean
+  icon: any
+  color: string
+  bgColor: string
+  createdAt: string
+}
+
+function statusToNotification(statusRaw: string) {
+  const status = (statusRaw || "").toLowerCase()
+
+  if (status === "delivered") {
+    return {
+      title: "Order Delivered!",
+      icon: CheckCircle2,
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+    }
+  }
+
+  if (status === "in-transit" || status === "out-for-delivery") {
+    return {
+      title: "Order On The Way",
+      icon: Truck,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+    }
+  }
+
+  if (status === "preparing" || status === "packed" || status === "ready" || status === "confirmed") {
+    return {
+      title: "Order Update",
+      icon: Clock,
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-50",
+    }
+  }
+
+  return {
+    title: "Order Placed",
     icon: Tag,
     color: "text-primary",
     bgColor: "bg-primary/10",
-  },
-  {
-    id: 3,
-    type: "order",
-    title: "Order Shipped",
-    message: "Your order #ORD-12344 is on the way. Track it now!",
-    time: "3 hours ago",
-    read: true,
-    icon: Truck,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
-  },
-  {
-    id: 4,
-    type: "restock",
-    title: "Back in Stock!",
-    message: "Organic Spinach is back in stock. Order now before it's gone!",
-    time: "Yesterday",
-    read: true,
-    icon: Sparkles,
-    color: "text-purple-600",
-    bgColor: "bg-purple-50",
-  },
-  {
-    id: 5,
-    type: "reminder",
-    title: "Restock Reminder",
-    message: "Running low on milk? Time to reorder your daily essentials.",
-    time: "2 days ago",
-    read: true,
-    icon: Clock,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-50",
-  },
-]
+  }
+}
+
+function formatTime(iso: string) {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
+  return d.toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
 
 export default function NotificationsPage() {
   const { language } = useLanguage()
   const t = (key: string) => getTranslation(language, key)
 
-  const [notificationList, setNotificationList] = useState(notifications)
+  const user = useMemo(() => getUser(), [])
+  const storageKey = useMemo(() => {
+    const id = user?.id || user?.Id
+    return id ? `notifications:${id}` : "notifications:anonymous"
+  }, [user])
+
+  const [notificationList, setNotificationList] = useState<NotificationItem[]>([])
+
+  useEffect(() => {
+    if (!authAPI.isAuthenticated()) return
+    const raw = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) setNotificationList(parsed)
+      } catch {
+        setNotificationList([])
+      }
+    }
+  }, [storageKey])
+
+  useEffect(() => {
+    if (!authAPI.isAuthenticated()) return
+
+    const syncFromOrders = async () => {
+      try {
+        const data = await api.orders.getMyOrders()
+        const orders = Array.isArray(data) ? data : []
+
+        setNotificationList((prev) => {
+          const prevById = new Map(prev.map((n) => [n.id, n]))
+          const next: NotificationItem[] = [...prev]
+
+          for (const o of orders) {
+            const orderId = (o?.id || o?.Id) as string | undefined
+            if (!orderId) continue
+
+            const orderNumber = (o?.orderNumber || o?.OrderNumber || "") as string
+            const status = (o?.status || o?.Status || "new") as string
+            const createdAt = (o?.updatedAt || o?.UpdatedAt || o?.createdAt || o?.CreatedAt || new Date().toISOString()) as string
+
+            const notifId = `${orderId}:${String(status).toLowerCase()}`
+            if (prevById.has(notifId)) continue
+
+            const meta = statusToNotification(status)
+            const message = orderNumber
+              ? `Your order ${orderNumber} status is now ${String(status).toLowerCase()}.`
+              : `Your order status is now ${String(status).toLowerCase()}.`
+
+            next.unshift({
+              id: notifId,
+              type: "order",
+              title: meta.title,
+              message,
+              time: formatTime(createdAt),
+              read: false,
+              icon: meta.icon,
+              color: meta.color,
+              bgColor: meta.bgColor,
+              createdAt,
+            })
+          }
+
+          const sorted = next
+            .slice()
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 50)
+
+          if (typeof window !== "undefined") {
+            localStorage.setItem(storageKey, JSON.stringify(sorted))
+          }
+
+          return sorted
+        })
+      } catch {
+        // ignore
+      }
+    }
+
+    syncFromOrders()
+  }, [storageKey])
 
   const markAllAsRead = () => {
-    setNotificationList((prev) => prev.map((n) => ({ ...n, read: true })))
+    setNotificationList((prev) => {
+      const next = prev.map((n) => ({ ...n, read: true }))
+      if (typeof window !== "undefined") localStorage.setItem(storageKey, JSON.stringify(next))
+      return next
+    })
   }
 
-  const deleteNotification = (id: number) => {
-    setNotificationList((prev) => prev.filter((n) => n.id !== id))
+  const deleteNotification = (id: string) => {
+    setNotificationList((prev) => {
+      const next = prev.filter((n) => n.id !== id)
+      if (typeof window !== "undefined") localStorage.setItem(storageKey, JSON.stringify(next))
+      return next
+    })
   }
 
   const unreadCount = notificationList.filter((n) => !n.read).length
