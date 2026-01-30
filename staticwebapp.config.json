@@ -11,6 +11,10 @@
             "rewrite": "/shops/_fallback/index.html"
         },
         {
+            "route": "/orders",
+            "rewrite": "/orders/index.html"
+        },
+        {
             "route": "/orders/*",
             "rewrite": "/orders/_fallback/index.html"
         },
