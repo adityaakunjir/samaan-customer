@@ -73,7 +73,15 @@ export default function OrdersPage() {
       const mappedOrders: Order[] = (Array.isArray(data) ? data : []).map((o: any) => ({
         id: (o.id || o.Id) as string,
         orderNumber: o.orderNumber,
-        date: new Date(o.createdAt).toLocaleString(),
+        // Format date with IST timezone
+        date: new Date(o.createdAt).toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
         status: (o.status || "new").toLowerCase(),
         total: o.grandTotal || o.itemsTotal || 0,
         grandTotal: o.grandTotal,
@@ -228,17 +236,15 @@ export default function OrdersPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as "all" | "active" | "completed")}
-                className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${
-                  activeTab === tab.id
+                className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 {tab.label}
                 <span
-                  className={`px-2 py-0.5 text-xs rounded-full ${
-                    activeTab === tab.id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-                  }`}
+                  className={`px-2 py-0.5 text-xs rounded-full ${activeTab === tab.id ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                    }`}
                 >
                   {tab.count}
                 </span>

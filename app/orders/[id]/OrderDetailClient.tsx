@@ -116,8 +116,27 @@ export default function OrderDetailClient({ id }: { id: string }) {
 
     const formatTime = (dateString?: string) => {
         if (!dateString) return null
-        const date = new Date(dateString)
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+
+        try {
+            // Parse the UTC datetime string
+            const date = new Date(dateString)
+
+            // Check if date is valid
+            if (isNaN(date.getTime())) {
+                console.error("Invalid date:", dateString)
+                return null
+            }
+
+            // Convert to IST (Indian Standard Time, UTC+5:30)
+            return date.toLocaleTimeString('en-IN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Kolkata'
+            })
+        } catch (error) {
+            console.error("Error formatting time:", error, dateString)
+            return null
+        }
     }
 
     const getTimeline = () => {
