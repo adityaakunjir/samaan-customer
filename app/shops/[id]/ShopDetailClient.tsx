@@ -211,6 +211,8 @@ export default function ShopDetailClient({ id }: { id: string }) {
                                                 freshnessScore: product.freshnessScore || 95,
                                                 stockedTime: "20m ago",
                                                 deliveryEta: "15 mins",
+                                                productId: product.id,
+                                                merchantId: merchant.id,
                                             }}
                                             variant="compact"
                                         />
