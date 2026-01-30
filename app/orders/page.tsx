@@ -72,9 +72,9 @@ export default function OrdersPage() {
       const data = await api.orders.getMyOrders()
       const mappedOrders: Order[] = (Array.isArray(data) ? data : []).map((o: any) => ({
         id: (o.id || o.Id) as string,
-        orderNumber: o.orderNumber,
+        orderNumber: o.orderNumber || o.OrderNumber,
         // Format date with IST timezone
-        date: new Date(o.createdAt).toLocaleString('en-IN', {
+        date: new Date(o.createdAt || o.CreatedAt).toLocaleString('en-IN', {
           timeZone: 'Asia/Kolkata',
           year: 'numeric',
           month: 'short',
@@ -83,18 +83,18 @@ export default function OrdersPage() {
           minute: '2-digit'
         }),
         status: (o.status || "new").toLowerCase(),
-        total: o.grandTotal || o.itemsTotal || 0,
-        grandTotal: o.grandTotal,
+        total: o.grandTotal ?? o.GrandTotal ?? o.itemsTotal ?? o.ItemsTotal ?? 0,
+        grandTotal: o.grandTotal ?? o.GrandTotal,
         items: (o.items || []).map((item: any) => ({
           id: item.productId || item.id,
-          name: item.productName || item.name,
-          quantity: `${item.quantity}`,
-          price: item.unitPrice || item.price,
+          name: item.productName || item.ProductName || item.name,
+          quantity: `${item.quantity ?? item.Quantity ?? 0}`,
+          price: item.unitPrice ?? item.UnitPrice ?? item.price ?? 0,
           image: "/placeholder.svg",
         })),
         deliveryTime: o.estimatedDelivery || "15-20 mins",
         estimatedDelivery: o.estimatedDelivery,
-        createdAt: o.createdAt,
+        createdAt: o.createdAt || o.CreatedAt,
         merchant: o.merchant,
       }))
       setOrders(mappedOrders)
@@ -327,7 +327,7 @@ export default function OrdersPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{order.items.map((i) => i.name).join(", ")}</p>
                   <p className="text-xs text-muted-foreground">
-                    {order.items.length} {t("cart.items")} |{" "}
+                    {order.items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0)} {t("cart.items")} |{" "}
                     {order.status === "delivered"
                       ? `${t("orders.deliveredIn")} ${order.deliveryTime || "15-20 mins"}`
                       : `Est. ${order.deliveryTime || order.estimatedDelivery || "15-20 mins"}`}
