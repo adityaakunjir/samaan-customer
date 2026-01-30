@@ -1,231 +1,36 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
-import { ArrowLeft, Filter, ChevronDown, Grid3X3, LayoutList, X, Check } from "lucide-react"
+import { ArrowLeft, Filter, ChevronDown, Grid3X3, LayoutList, X, Check, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/product-card"
 import { CartFooter } from "@/components/cart-footer"
+import { productsAPI } from "@/lib/api/client"
 
-const categoryData: Record<string, { name: string; products: any[] }> = {
-    "dairy-bread-eggs": {
-        name: "Dairy, Bread & Eggs",
-        products: [
-            {
-                id: 1,
-                name: "Amul Taaza Milk",
-                quantity: "500ml",
-                price: 30,
-                image: "/amul-milk-packet-white-background.jpg",
-                freshnessScore: 98,
-                stockedTime: "15m ago",
-                deliveryEta: "8 mins",
-                rating: 4.5,
-            },
-            {
-                id: 2,
-                name: "Brown Bread",
-                quantity: "400g",
-                price: 45,
-                image: "/brown-bread-loaf-white-background.jpg",
-                freshnessScore: 95,
-                stockedTime: "30m ago",
-                deliveryEta: "8 mins",
-                rating: 4.2,
-            },
-            {
-                id: 3,
-                name: "Farm Fresh Eggs",
-                quantity: "6 pcs",
-                price: 60,
-                image: "/farm-eggs-brown-white-background.jpg",
-                freshnessScore: 99,
-                stockedTime: "10m ago",
-                deliveryEta: "8 mins",
-                rating: 4.8,
-            },
-            {
-                id: 4,
-                name: "Amul Butter",
-                quantity: "100g",
-                price: 55,
-                image: "/butter-block-yellow-white-background.jpg",
-                freshnessScore: 97,
-                stockedTime: "20m ago",
-                deliveryEta: "8 mins",
-                rating: 4.6,
-            },
-            {
-                id: 5,
-                name: "Fresh Curd",
-                quantity: "400g",
-                price: 40,
-                image: "/curd-yogurt-cup-white-background.jpg",
-                freshnessScore: 96,
-                stockedTime: "25m ago",
-                deliveryEta: "8 mins",
-                rating: 4.3,
-            },
-            {
-                id: 6,
-                name: "Paneer",
-                quantity: "200g",
-                price: 90,
-                image: "/fresh-paneer-cubes-white-background.jpg",
-                freshnessScore: 98,
-                stockedTime: "15m ago",
-                deliveryEta: "8 mins",
-                rating: 4.7,
-            },
-        ],
-    },
-    "fruits-vegetables": {
-        name: "Fruits & Vegetables",
-        products: [
-            {
-                id: 1,
-                name: "Local Red Tomato",
-                quantity: "1 kg",
-                price: 150,
-                image: "/fresh-red-tomato-white-background.jpg",
-                freshnessScore: 98,
-                stockedTime: "20m ago",
-                deliveryEta: "8 mins",
-                rating: 4.5,
-            },
-            {
-                id: 2,
-                name: "Green Capsicum",
-                quantity: "500g",
-                price: 80,
-                image: "/green-capsicum-vegetable.jpg",
-                freshnessScore: 95,
-                stockedTime: "35m ago",
-                deliveryEta: "10 mins",
-                rating: 4.2,
-            },
-            {
-                id: 3,
-                name: "Fresh Spinach",
-                quantity: "250g",
-                price: 40,
-                image: "/fresh-spinach-leaves-bundle.jpg",
-                freshnessScore: 99,
-                stockedTime: "10m ago",
-                deliveryEta: "8 mins",
-                rating: 4.9,
-            },
-            {
-                id: 4,
-                name: "Fresh Onions",
-                quantity: "1 kg",
-                price: 35,
-                image: "/fresh-onions-white-background.jpg",
-                freshnessScore: 97,
-                stockedTime: "15m ago",
-                deliveryEta: "8 mins",
-                rating: 4.4,
-            },
-            {
-                id: 5,
-                name: "Green Coriander",
-                quantity: "100g",
-                price: 15,
-                image: "/fresh-coriander-leaves-bundle.jpg",
-                freshnessScore: 99,
-                stockedTime: "5m ago",
-                deliveryEta: "8 mins",
-                rating: 4.6,
-            },
-            {
-                id: 6,
-                name: "Red Apples",
-                quantity: "500g",
-                price: 120,
-                image: "/fresh-fruits-oranges-apples.jpg",
-                freshnessScore: 96,
-                stockedTime: "25m ago",
-                deliveryEta: "10 mins",
-                rating: 4.3,
-            },
-        ],
-    },
-    "snacks-beverages": {
-        name: "Snacks & Beverages",
-        products: [
-            {
-                id: 1,
-                name: "Lays Classic",
-                quantity: "52g",
-                price: 20,
-                image: "/chips-snacks-packet.jpg",
-                freshnessScore: 100,
-                stockedTime: "1h ago",
-                deliveryEta: "8 mins",
-                rating: 4.4,
-            },
-            {
-                id: 2,
-                name: "Coca Cola",
-                quantity: "750ml",
-                price: 40,
-                image: "/cold-drinks-bottles.jpg",
-                freshnessScore: 100,
-                stockedTime: "2h ago",
-                deliveryEta: "8 mins",
-                rating: 4.6,
-            },
-            {
-                id: 3,
-                name: "Kurkure Masala",
-                quantity: "90g",
-                price: 30,
-                image: "/chips-snacks-packet.jpg",
-                freshnessScore: 100,
-                stockedTime: "1h ago",
-                deliveryEta: "8 mins",
-                rating: 4.5,
-            },
-        ],
-    },
+interface Product {
+    id: number
+    name: string
+    quantity: string
+    price: number
+    image: string
+    freshnessScore: number
+    stockedTime: string
+    deliveryEta: string
+    rating: number
+    productId: string
+    merchantId: string
 }
 
-// Default products for any category
-const defaultProducts = [
-    {
-        id: 1,
-        name: "Product 1",
-        quantity: "500g",
-        price: 99,
-        image: "/assorted-grocery-products.png",
-        freshnessScore: 95,
-        stockedTime: "20m ago",
-        deliveryEta: "10 mins",
-        rating: 4.0,
-    },
-    {
-        id: 2,
-        name: "Product 2",
-        quantity: "1 kg",
-        price: 149,
-        image: "/assorted-groceries.png",
-        freshnessScore: 97,
-        stockedTime: "15m ago",
-        deliveryEta: "8 mins",
-        rating: 4.2,
-    },
-    {
-        id: 3,
-        name: "Product 3",
-        quantity: "250g",
-        price: 79,
-        image: "/generic-food-product.png",
-        freshnessScore: 98,
-        stockedTime: "10m ago",
-        deliveryEta: "8 mins",
-        rating: 4.5,
-    },
-]
+// Category slug to display name mapping
+const categoryNames: Record<string, string> = {
+    "dairy-bread-eggs": "Dairy, Bread & Eggs",
+    "fruits-vegetables": "Fruits & Vegetables",
+    "snacks-beverages": "Snacks & Beverages",
+    "cooking-essentials": "Cooking Essentials",
+    "instant-food": "Instant Food",
+    "personal-care": "Personal Care",
+}
 
 type SortOption = "relevance" | "price-low" | "price-high" | "rating" | "freshness"
 type PriceRange = "all" | "under-50" | "50-100" | "above-100"
@@ -239,18 +44,56 @@ export default function CategoryClient({ slug }: { slug: string }) {
     const [showSortModal, setShowSortModal] = useState(false)
     const [showPriceModal, setShowPriceModal] = useState(false)
     const [showRatingModal, setShowRatingModal] = useState(false)
+    const [products, setProducts] = useState<Product[]>([])
+    const [loading, setLoading] = useState(true)
 
-    const category = categoryData[slug] || {
-        name: slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-        products: defaultProducts,
-    }
+    const categoryName = categoryNames[slug] || slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+
+    // Fetch products from API
+    useEffect(() => {
+        async function fetchProducts() {
+            setLoading(true)
+            try {
+                // Try to fetch by category first, fallback to all products
+                let apiProducts
+                try {
+                    apiProducts = await productsAPI.getByCategory(slug)
+                } catch {
+                    // If category endpoint fails, get all products
+                    apiProducts = await productsAPI.getAll()
+                }
+
+                // Transform API products to our format
+                const transformedProducts: Product[] = (apiProducts || []).map((p: any, index: number) => ({
+                    id: 1000 + index, // Local cart ID
+                    name: p.name,
+                    quantity: p.unit || "1 unit",
+                    price: p.price,
+                    image: p.imageUrl || "/generic-food-product.png",
+                    freshnessScore: 85 + Math.floor(Math.random() * 15),
+                    stockedTime: `${10 + Math.floor(Math.random() * 30)}m ago`,
+                    deliveryEta: `${8 + Math.floor(Math.random() * 5)} mins`,
+                    rating: 4 + Math.random() * 0.9,
+                    productId: p.id, // Real backend GUID
+                    merchantId: p.merchantId, // Real merchant GUID
+                }))
+                setProducts(transformedProducts)
+            } catch (error) {
+                console.error("Failed to fetch products:", error)
+                setProducts([])
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchProducts()
+    }, [slug])
 
     const filteredAndSortedProducts = useMemo(() => {
-        let products = [...category.products]
+        let result = [...products]
 
         // Apply price filter
         if (priceRange !== "all") {
-            products = products.filter((p) => {
+            result = result.filter((p) => {
                 if (priceRange === "under-50") return p.price < 50
                 if (priceRange === "50-100") return p.price >= 50 && p.price <= 100
                 if (priceRange === "above-100") return p.price > 100
@@ -260,30 +103,29 @@ export default function CategoryClient({ slug }: { slug: string }) {
 
         // Apply rating filter
         if (minRating > 0) {
-            products = products.filter((p) => (p.rating || 0) >= minRating)
+            result = result.filter((p) => (p.rating || 0) >= minRating)
         }
 
         // Apply sorting
         switch (sortBy) {
             case "price-low":
-                products.sort((a, b) => a.price - b.price)
+                result.sort((a, b) => a.price - b.price)
                 break
             case "price-high":
-                products.sort((a, b) => b.price - a.price)
+                result.sort((a, b) => b.price - a.price)
                 break
             case "rating":
-                products.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+                result.sort((a, b) => (b.rating || 0) - (a.rating || 0))
                 break
             case "freshness":
-                products.sort((a, b) => (b.freshnessScore || 0) - (a.freshnessScore || 0))
+                result.sort((a, b) => (b.freshnessScore || 0) - (a.freshnessScore || 0))
                 break
             default:
-                // relevance - keep original order
                 break
         }
 
-        return products
-    }, [category.products, sortBy, priceRange, minRating])
+        return result
+    }, [products, sortBy, priceRange, minRating])
 
     const activeFiltersCount = (priceRange !== "all" ? 1 : 0) + (minRating > 0 ? 1 : 0)
 
@@ -302,8 +144,10 @@ export default function CategoryClient({ slug }: { slug: string }) {
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div className="flex-1">
-                        <h1 className="text-lg font-bold">{category.name}</h1>
-                        <p className="text-xs text-muted-foreground">{filteredAndSortedProducts.length} products</p>
+                        <h1 className="text-lg font-bold">{categoryName}</h1>
+                        <p className="text-xs text-muted-foreground">
+                            {loading ? "Loading..." : `${filteredAndSortedProducts.length} products`}
+                        </p>
                     </div>
                 </div>
             </header>
@@ -351,7 +195,6 @@ export default function CategoryClient({ slug }: { slug: string }) {
                         >
                             Rating
                         </Button>
-                        {/* Clear filters button */}
                         {activeFiltersCount > 0 && (
                             <Button variant="ghost" size="sm" className="rounded-full text-primary" onClick={clearAllFilters}>
                                 Clear all
@@ -377,7 +220,11 @@ export default function CategoryClient({ slug }: { slug: string }) {
 
             {/* Products Grid */}
             <main className="max-w-7xl mx-auto px-4 py-6 pb-32">
-                {filteredAndSortedProducts.length === 0 ? (
+                {loading ? (
+                    <div className="flex items-center justify-center py-20">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                ) : filteredAndSortedProducts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20">
                         <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6">
                             <Filter className="w-12 h-12 text-muted-foreground" />
