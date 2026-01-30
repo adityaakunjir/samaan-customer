@@ -186,8 +186,16 @@ function LoginContent() {
         callback: handleGoogleCallback,
       })
 
-      // Trigger Google Sign-In popup
-      window.google.accounts.id.prompt()
+      // Trigger Google Sign-In popup with notification callback
+      window.google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment() || notification.isDismissedMoment()) {
+          // Reset loading if popup was not shown, skipped, or dismissed
+          setIsLoading(false)
+          if (notification.isNotDisplayed()) {
+            setError("Google Sign-In popup was blocked. Please allow popups or try another login method.")
+          }
+        }
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to initialize Google login.")
       setIsLoading(false)
