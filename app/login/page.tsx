@@ -366,6 +366,13 @@ function LoginContent() {
               </p>
             </div>
 
+            {/* Demo Account Info */}
+            <div className="mb-4 p-4 rounded-xl border-2 border-primary/30 bg-primary/5">
+              <p className="text-sm font-semibold text-primary">Demo Account:</p>
+              <p className="text-sm text-primary">Email: customer1@demo.com</p>
+              <p className="text-sm text-primary">Password: Demo@123</p>
+            </div>
+
             {/* Login Card */}
             <div className="bg-card/80 backdrop-blur-sm rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-border/50 p-6 sm:p-8">
               {/* Error Message */}
@@ -387,8 +394,8 @@ function LoginContent() {
                         setError(null)
                       }}
                       className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 ${loginMethod === "phone"
-                          ? "bg-card text-foreground shadow-md"
-                          : "text-muted-foreground hover:text-foreground"
+                        ? "bg-card text-foreground shadow-md"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       <Phone className="w-4 h-4" />
@@ -401,8 +408,8 @@ function LoginContent() {
                         setError(null)
                       }}
                       className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-300 ${loginMethod === "email"
-                          ? "bg-card text-foreground shadow-md"
-                          : "text-muted-foreground hover:text-foreground"
+                        ? "bg-card text-foreground shadow-md"
+                        : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                       <Mail className="w-4 h-4" />
