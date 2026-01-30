@@ -6,9 +6,6 @@ import { useLanguage } from "@/lib/language-context"
 import { getTranslation } from "@/lib/translations"
 import { useCart } from "@/lib/cart-context"
 
-// Demo merchant ID for checkout orders (fallback if not provided)
-const DEMO_MERCHANT_ID = "AAAA1111-1111-1111-1111-111111111111"
-
 interface Product {
   id: number
   name: string
@@ -36,6 +33,13 @@ export function ProductCard({ product, variant = "compact" }: ProductCardProps) 
   const qty = getItemCount(product.id)
 
   const handleAdd = () => {
+    // Validate that we have real backend IDs
+    if (!product.productId || !product.merchantId) {
+      console.error("Product missing backend IDs:", product.name)
+      alert(`Cannot add ${product.name} - product data is incomplete. Please try refreshing the page.`)
+      return
+    }
+
     addItem({
       id: product.id,
       name: product.name,
@@ -43,10 +47,11 @@ export function ProductCard({ product, variant = "compact" }: ProductCardProps) 
       price: product.price,
       image: product.image,
       weight: product.weight,
-      merchantId: product.merchantId || DEMO_MERCHANT_ID,
-      productId: product.productId || `PROD-${product.id}-${Date.now()}`,
+      merchantId: product.merchantId,
+      productId: product.productId,
     })
   }
+
 
   const handleIncrement = () => {
     updateQuantity(product.id, qty + 1)
