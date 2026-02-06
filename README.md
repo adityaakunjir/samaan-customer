@@ -8,7 +8,7 @@ Customer-facing web app for **Samaan** (browse products, cart/checkout, order tr
 ## Related Repositories
 - **Backend API:** https://github.com/adityaakunjir/samaan-api
 - **Merchant App:** https://github.com/adityaakunjir/samaan-merchant
-- **Portfolio Repo:** (create repo `Samaan` and link it here)
+- **Portfolio Repo:** https://github.com/adityaakunjir/Samaan
 
 ## Tech Stack
 - Next.js (React), TypeScript
